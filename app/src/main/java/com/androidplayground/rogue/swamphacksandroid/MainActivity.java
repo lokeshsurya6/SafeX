@@ -195,10 +195,14 @@ public class MainActivity extends AppCompatActivity {
                     }
                     else {
                         StringBuilder sb = new StringBuilder();
-                        if (results.size() > 5) {
+                        if (results.size() > 5) { 
                             results = (ArrayList<String>) results.subList(0, 5);
                         }
                         for (String result : results) {
+                            if(result == getString(R.string.HotWord))
+                            {
+                                Log.e("MainActivity", "HOt Word Detected" + result);
+                            }
                             sb.append(result).append("\n");
                             Log.e("String BUffer",sb.toString());
                         }
