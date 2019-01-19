@@ -10,6 +10,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.provider.Telephony;
+import android.speech.SpeechRecognizer;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.ActivityCompat;
@@ -23,22 +24,23 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.androidplayground.rogue.helper.GPSTracker;
 import com.androidplayground.rogue.helper.MainActivityHelper;
+import com.androidplayground.rogue.helper.SpeechRecognizerManager;
 
-import java.util.List;
+import org.w3c.dom.Text;
+
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
     private TextView mTextMessage;
-    private TextView mContcts;
+    private TextView result_tv;
     private Button addButton;
     private Button sendMessageButton;
     private ListView listView;
-    private String fileName = "ContactList";
-    final int REQUEST_CODE_PICK_CONTACT = 1;
-    final int  MAX_PICK_CONTACT= 10;
-
+    private Button recordVoiceBtn;
+    private Button stopRecordVoiceBtn;
+    private SpeechRecognizerManager mSpeechManager;
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
             = new BottomNavigationView.OnNavigationItemSelectedListener() {
 
@@ -64,9 +66,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        addButton= (Button) findViewById(R.id.button);
-        sendMessageButton = (Button) findViewById(R.id.sendMessage);
-        listView = (ListView) findViewById(R.id.contactsListView);
+
+        findViews();
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -79,47 +80,63 @@ public class MainActivity extends AppCompatActivity {
         sendMessageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //Sending the messages to the contacts
-
-                //Get the location
-                GPSTracker gpsTracker = new GPSTracker(getApplicationContext());
                 if(ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                         ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED)
                 {
                     ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.SEND_SMS}, 200);
                 }
+                MainActivityHelper.sendMessage(getApplicationContext());
+                MainActivityHelper.playAlarm(getApplicationContext());
 
-                List<String> numbers = MainActivityHelper.readContactsList(getApplicationContext());
-                for(String num: numbers) {
-                    Log.e("MainActivity", "Message is Heloooooo");
-                    Location l = gpsTracker.getLocation();
-                    //Log.e("MainActivity", ("The location is:" + l));
-                    String message = "HELP ME!!!!";
-                    SmsManager smsManager = SmsManager.getDefault();
-                    StringBuffer smsBody = new StringBuffer();
-                    smsBody.append(message);
-                    if (l != null) {
-                        double lat = l.getLatitude();
-                        double lon = l.getLongitude();
-                        String loc = "http://maps.google.com/maps?saddr=" + lat + "," + lon + lat + "," + lon;
-                        smsBody.append(Uri.parse(loc));
-                        //Log.e("MainActivity", "Message is " + smsBody);
+            }
+        });
+
+        recordVoiceBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED &&
+                        ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.INTERNET) == PackageManager.PERMISSION_GRANTED) {
+
+                    if (mSpeechManager == null) {
+                        SetSpeechListener();
+                    } else if (!mSpeechManager.ismIsListening()) {
+                        mSpeechManager.destroy();
+                        SetSpeechListener();
                     }
 
-                    android.telephony.SmsManager.getDefault().sendTextMessage("+1 4704355303", null, smsBody.toString(), null, null);
+                }
+                else
+                {
+                    ActivityCompat.requestPermissions(MainActivity.this, new String[] {Manifest.permission.RECORD_AUDIO, Manifest.permission.INTERNET}, 200);
+                    recordVoiceBtn.performClick();
                 }
             }
         });
 
-        //mTextMessage = (TextView) findViewById(R.id.message);
-        //mContcts = (TextView) findViewById(R.id.contactsView);
+        stopRecordVoiceBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(mSpeechManager!=null) {
+                    result_tv.setText("Destroyed");
+                    mSpeechManager.destroy();
+                    mSpeechManager = null;
+                }
+            }
+        });
+
         BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
-
-        //mContcts.setText(text);
         MainActivityHelper.updateListView(getApplicationContext(), listView);
     }
 
+    private void findViews() {
+        addButton= (Button) findViewById(R.id.button);
+        recordVoiceBtn = (Button) findViewById(R.id.recordVoiceBtn);
+        sendMessageButton = (Button) findViewById(R.id.sendMessage);
+        listView = (ListView) findViewById(R.id.contactsListView);
+        stopRecordVoiceBtn = (Button) findViewById(R.id.stopRecordVoiceBtn);
+        result_tv = (TextView) findViewById(R.id.textView);
+    }
 
 
     @Override
@@ -160,6 +177,49 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+
+    private void SetSpeechListener()
+    {
+        mSpeechManager=new SpeechRecognizerManager(this, new SpeechRecognizerManager.onResultsReady() {
+            @Override
+            public void onResults(ArrayList<String> results) {
+                Log.e("MainActivity","SetSpeechListener");
+                if(results!=null && results.size()>0)
+                {
+                    Log.e("Size of results",((Integer)results.size()).toString());
+                    if(results.size()==1)
+                    {
+                        mSpeechManager.destroy();
+                        mSpeechManager = null;
+                        result_tv.setText(results.get(0));
+                    }
+                    else {
+                        StringBuilder sb = new StringBuilder();
+                        if (results.size() > 5) {
+                            results = (ArrayList<String>) results.subList(0, 5);
+                        }
+                        for (String result : results) {
+                            sb.append(result).append("\n");
+                            Log.e("String BUffer",sb.toString());
+                        }
+                        result_tv.setText(sb.toString());
+                    }
+                }
+                else
+                    ;
+                    result_tv.setText("No results found");
+            }
+        });
+    }
+
+    @Override
+    protected void onPause() {
+        if(mSpeechManager!=null) {
+            mSpeechManager.destroy();
+            mSpeechManager=null;
+        }
+        super.onPause();
+    }
 
 
 }

@@ -3,6 +3,12 @@ package com.androidplayground.rogue.helper;
 import android.content.Context;
 import android.location.Location;
 import android.location.LocationManager;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
+import android.telephony.SmsManager;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
@@ -16,6 +22,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import static android.support.v4.content.ContextCompat.getSystemService;
 
 public class MainActivityHelper {
 
@@ -83,6 +91,38 @@ public class MainActivityHelper {
         {
             Log.e("MainActivity","The contacts list is NULL");
         }
+    }
+
+
+    public static void sendMessage(Context context)
+    {
+        List<String> numbers = MainActivityHelper.readContactsList(context);
+        GPSTracker gpsTracker = new GPSTracker(context);
+        for(String num: numbers) {
+            Log.e("MainActivity", "Message is Heloooooo");
+            Location l = gpsTracker.getLocation();
+            //Log.e("MainActivity", ("The location is:" + l));
+            String message = "HELP ME!!!!";
+            SmsManager smsManager = SmsManager.getDefault();
+            StringBuffer smsBody = new StringBuffer();
+            smsBody.append(message);
+            if (l != null) {
+                double lat = l.getLatitude();
+                double lon = l.getLongitude();
+                String loc = "http://maps.google.com/maps?saddr=" + lat + "," + lon;
+                smsBody.append(Uri.parse(loc));
+                //Log.e("MainActivity", "Message is " + smsBody);
+            }
+
+            android.telephony.SmsManager.getDefault().sendTextMessage(num, null, smsBody.toString(), null, null);
+        }
+    }
+
+    public static void playAlarm(Context context)
+    {
+        Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
+        Ringtone ringtone = RingtoneManager.getRingtone(context, notification);
+        ringtone.play();
     }
 
 
