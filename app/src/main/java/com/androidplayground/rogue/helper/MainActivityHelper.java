@@ -28,6 +28,7 @@ import static android.support.v4.content.ContextCompat.getSystemService;
 public class MainActivityHelper {
 
     public static String fileName = "contactsList";
+    public static String fileName2 = "contactsNameList";
     public static void writeNumberToStorage(String number, Context context)
     {
         try {
@@ -42,6 +43,28 @@ public class MainActivityHelper {
             Log.e("MainActivity", "Writing to the file:" + fileToWrite.getName());
             //mContcts.setText("Adding the text");
             fos.write(number.getBytes());
+            fos.close();
+        }
+        catch(Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    public static void writeNameToStorage(String name, Context context)
+    {
+        try {
+            File fileToWrite = new File(context.getFilesDir(), fileName2);
+            if (!fileToWrite.exists()) {
+                Log.e("MainActivity", "File does not exist, creating one");
+                fileToWrite.createNewFile();
+            }
+
+            name = name+"\n";
+            FileOutputStream fos = new FileOutputStream(fileToWrite, true);
+            Log.e("MainActivity", "Writing to the file:" + fileToWrite.getName());
+            //mContcts.setText("Adding the text");
+            fos.write(name.getBytes());
             fos.close();
         }
         catch(Exception e)
@@ -81,17 +104,47 @@ public class MainActivityHelper {
         return list;
     }
 
-    public static void updateListView(Context context, ListView listView) {
-        List<String> contactsList = MainActivityHelper.readContactsList(context);
-        if(contactsList!=null && contactsList.size() > 0) {
-            ArrayAdapter adapter = new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, contactsList);
-            listView.setAdapter(adapter);
+    public static List<String> readContactsNameList(Context context) {
+        StringBuilder text = new StringBuilder();
+
+        Log.e("MainActivity","Reading the contacts list");
+        File file = new File(context.getFilesDir(), fileName2);
+        if(!file.exists()) {
+            Log.e("MainActivity","File does not exist");
+            return new ArrayList<>();
         }
-        else
-        {
-            Log.e("MainActivity","The contacts list is NULL");
+
+        List<String> list = new ArrayList<>();
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(file));
+            String line;
+            while ((line = br.readLine()) != null) {
+                text.append(line);
+                text.append('\n');
+                list.add(line);
+                Log.e("MainActivity","Reading the LIst");
+            }
+            br.close();
         }
+        catch (IOException e) {
+            //You'll need to add proper error handling here
+            e.printStackTrace();
+        }
+
+        return list;
     }
+
+//    public static void updateListView(Context context, ListView listView) {
+//        List<String> contactsList = MainActivityHelper.readContactsList(context);
+//        if(contactsList!=null && contactsList.size() > 0) {
+//            ArrayAdapter adapter = new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, contactsList);
+//            listView.setAdapter(adapter);
+//        }
+//        else
+//        {
+//            Log.e("MainActivity","The contacts list is NULL");
+//        }
+//    }
 
 
     public static void sendMessage(Context context)

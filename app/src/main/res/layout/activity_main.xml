@@ -22,16 +22,10 @@
 
     <ListView
         android:id="@+id/contactsListView"
-        android:layout_width="322dp"
-        android:layout_height="500dp"
-        android:layout_marginStart="-16dp"
-        android:layout_marginTop="5dp"
-        android:layout_marginBottom="10dp"
-        android:background="@android:color/transparent"
-        android:cacheColorHint="@android:color/transparent"
-        android:divider="#CCCCCC"
-        android:dividerHeight="1dp"
-        android:paddingLeft="2dp"></ListView>
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="50dp">
+    </ListView>
 
     <Button
         android:id="@+id/button"
