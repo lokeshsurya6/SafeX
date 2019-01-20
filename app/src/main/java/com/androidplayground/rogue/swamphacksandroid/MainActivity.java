@@ -1,6 +1,9 @@
 package com.androidplayground.rogue.swamphacksandroid;
 
 import android.Manifest;
+
+import android.content.Context;
+
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -26,9 +29,11 @@ import android.widget.TextView;
 
 import com.androidplayground.rogue.helper.MainActivityHelper;
 import com.androidplayground.rogue.helper.SpeechRecognizerManager;
+
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
+
 
 import org.w3c.dom.Text;
 
@@ -45,7 +50,12 @@ public class MainActivity extends AppCompatActivity {
     private static final int MY_PERMISSION_ACCESS_FINE_LOCATION = 11;
 
     private static final int PERMISSION_SEND_SMS = 1;
+
     private ListView listView;
+    public ListView getListView()
+    {
+        return listView;
+    }
     private Button recordVoiceBtn;
     private Button stopRecordVoiceBtn;
     private SpeechRecognizerManager mSpeechManager;
@@ -78,10 +88,11 @@ public class MainActivity extends AppCompatActivity {
         addButton= (Button) findViewById(R.id.button);
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
+
         sendMessageButton = (Button) findViewById(R.id.sendMessage);
         List<String> numbers = MainActivityHelper.readContactsList(getApplicationContext());
         List<String> names = MainActivityHelper.readContactsNameList(getApplicationContext());
-        adapter=new MyListAdapter(this, names, numbers);
+        adapter=new MyListAdapter(this,getApplicationContext(), names, numbers);
         listView = (ListView) findViewById(R.id.contactsListView);
         listView.setAdapter(adapter);
         findViews();
@@ -117,6 +128,7 @@ public class MainActivity extends AppCompatActivity {
 
                             }
                         });
+
                 MainActivityHelper.playAlarm(getApplicationContext());
 
             }
@@ -157,7 +169,9 @@ public class MainActivity extends AppCompatActivity {
 
         BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
-        updateListView(listView);
+
+        //updateListView(listView);
+        MainActivityHelper.updateListView(listView, this, getApplicationContext());
     }
 
     private void findViews() {
@@ -182,6 +196,7 @@ public class MainActivity extends AppCompatActivity {
                 break;
         }
     }
+
 
 
 
@@ -221,7 +236,9 @@ public class MainActivity extends AppCompatActivity {
                 //mTextMessage.setText(number);
                 MainActivityHelper.writeNumberToStorage(number, getApplicationContext());
                 MainActivityHelper.writeNameToStorage(name, getApplicationContext());
-                updateListView(listView);
+
+                //updateListView(listView);
+                MainActivityHelper.updateListView(listView, this, getApplicationContext());
             }
             else
             {
@@ -230,19 +247,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void updateListView(ListView listView) {
-        List<String> contactsList = MainActivityHelper.readContactsList(getApplicationContext());
-        List<String> contactsNameList = MainActivityHelper.readContactsNameList(getApplicationContext());
-        if(contactsList!=null && contactsNameList!=null && contactsNameList.size() > 0 && contactsList.size() > 0) {
-            //ArrayAdapter adapter = new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, contactsList);
-            MyListAdapter adapter=new MyListAdapter(MainActivity.this , contactsNameList, contactsList);
-            listView.setAdapter(adapter);
-        }
-        else
-        {
-            Log.e("MainActivity","The contacts list is NULL");
-        }
-    }
+
 
 
     private void SetSpeechListener()
@@ -262,10 +267,27 @@ public class MainActivity extends AppCompatActivity {
                     }
                     else {
                         StringBuilder sb = new StringBuilder();
-                        if (results.size() > 5) {
+
+                        if (results.size() > 5) { 
                             results = (ArrayList<String>) results.subList(0, 5);
                         }
                         for (String result : results) {
+                            if(result.equalsIgnoreCase(getString(R.string.HotWord)))
+                            {
+                                Log.e("MainActivity", "HOt Word Detected" + result);
+                                //MainActivityHelper.sendMessage(getApplicationContext());
+                                //MainActivityHelper.playAlarm(getApplicationContext());
+                                sendMessageButton.performClick();
+
+                                //Start recording the Microphone input
+                                mSpeechManager.destroy();
+                                if(ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
+                                {
+                                    ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 200);
+                                }
+                                MainActivityHelper.record(getApplicationContext());
+
+                            }
                             sb.append(result).append("\n");
                             Log.e("String BUffer",sb.toString());
                         }
