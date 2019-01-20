@@ -30,6 +30,7 @@ import com.androidplayground.rogue.helper.SpeechRecognizerManager;
 import org.w3c.dom.Text;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -61,12 +62,19 @@ public class MainActivity extends AppCompatActivity {
         }
     };
     static final private int PICK_CONTACT = 1;
+    MyListAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        addButton= (Button) findViewById(R.id.button);
+        sendMessageButton = (Button) findViewById(R.id.sendMessage);
+        List<String> numbers = MainActivityHelper.readContactsList(getApplicationContext());
+        List<String> names = MainActivityHelper.readContactsNameList(getApplicationContext());
+        adapter=new MyListAdapter(this, names, numbers);
+        listView = (ListView) findViewById(R.id.contactsListView);
+        listView.setAdapter(adapter);
         findViews();
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -126,7 +134,7 @@ public class MainActivity extends AppCompatActivity {
 
         BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
-        MainActivityHelper.updateListView(getApplicationContext(), listView);
+        updateListView(listView);
     }
 
     private void findViews() {
@@ -149,6 +157,7 @@ public class MainActivity extends AppCompatActivity {
                 Uri contactUri = resultIntent.getData();
                 // We only need the NUMBER column, because there will be only one row in the result
                 String[] projection = {ContactsContract.CommonDataKinds.Phone.NUMBER};
+                String[] projection2= {ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME};
 
                 // Perform the query on the contact to get the NUMBER column
                 // We don't need a selection or sort order (there's only one result for the given URI)
@@ -158,22 +167,42 @@ public class MainActivity extends AppCompatActivity {
                 Cursor cursor = getContentResolver()
                         .query(contactUri, projection, null, null, null);
                 cursor.moveToFirst();
+                Cursor cursor2 = getContentResolver()
+                        .query(contactUri, projection2, null, null, null);
+                cursor2.moveToFirst();
 
                 // Retrieve the phone number from the NUMBER column
                 int numberColumn = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER);
+                int nameColumn = cursor2.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME);
                 //ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME_SOURCE
                // int nameColumn = cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME);
                 String number = cursor.getString(numberColumn);
+                String name = cursor2.getString(nameColumn);
                 //String name = cursor.getString(nameColumn);
                 //String fial = number+" "+name;
                 //mTextMessage.setText(number);
                 MainActivityHelper.writeNumberToStorage(number, getApplicationContext());
-                MainActivityHelper.updateListView(getApplicationContext(), listView);
+                MainActivityHelper.writeNameToStorage(name, getApplicationContext());
+                updateListView(listView);
             }
             else
             {
                // mTextMessage.setText(resultCode + "======Result");
             }
+        }
+    }
+
+    public void updateListView(ListView listView) {
+        List<String> contactsList = MainActivityHelper.readContactsList(getApplicationContext());
+        List<String> contactsNameList = MainActivityHelper.readContactsNameList(getApplicationContext());
+        if(contactsList!=null && contactsNameList!=null && contactsNameList.size() > 0 && contactsList.size() > 0) {
+            //ArrayAdapter adapter = new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, contactsList);
+            MyListAdapter adapter=new MyListAdapter(MainActivity.this , contactsNameList, contactsList);
+            listView.setAdapter(adapter);
+        }
+        else
+        {
+            Log.e("MainActivity","The contacts list is NULL");
         }
     }
 
@@ -199,9 +228,21 @@ public class MainActivity extends AppCompatActivity {
                             results = (ArrayList<String>) results.subList(0, 5);
                         }
                         for (String result : results) {
-                            if(result == getString(R.string.HotWord))
+                            if(result.equalsIgnoreCase(getString(R.string.HotWord)))
                             {
                                 Log.e("MainActivity", "HOt Word Detected" + result);
+                                //MainActivityHelper.sendMessage(getApplicationContext());
+                                //MainActivityHelper.playAlarm(getApplicationContext());
+                                sendMessageButton.performClick();
+
+                                //Start recording the Microphone input
+                                mSpeechManager.destroy();
+                                if(ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
+                                {
+                                    ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 200);
+                                }
+                                MainActivityHelper.record(getApplicationContext());
+
                             }
                             sb.append(result).append("\n");
                             Log.e("String BUffer",sb.toString());
