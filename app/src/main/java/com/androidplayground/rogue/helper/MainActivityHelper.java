@@ -40,6 +40,7 @@ public class MainActivityHelper {
 
     public static String fileName = "contactsList";
     public static String fileName2 = "contactsNameList";
+    public static String fileName3 = "hardWordFile";
     public static void writeNumberToStorage(String number, Context context)
     {
         try {
@@ -110,6 +111,7 @@ public class MainActivityHelper {
             e.printStackTrace();
         }
     }
+
 
     public static void delNumberFunction(String num, Context context){
         try{
@@ -187,6 +189,51 @@ public class MainActivityHelper {
             e.printStackTrace();
         }
 
+    }
+
+    public static void updateHarWord(Context context, String newWord){
+        try{
+            File inputFile = new File(context.getFilesDir(), fileName3);
+            if(!inputFile.exists()) {
+                Log.e("MainActivity","File does not exist");
+            }
+            File outputFile= new File(context.getFilesDir(), "temp1");
+            if (!outputFile.exists()) {
+                Log.e("MainActivity", "File does not exist, creating one");
+                outputFile.createNewFile();
+            }
+            //Toast.makeText(context, "Test is" + newWord, Toast.LENGTH_LONG).show();
+            BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile));
+            writer.write(newWord);
+            if (inputFile.delete()) {
+                // Rename the output file to the input file
+                if (!outputFile.renameTo(inputFile)) {
+                    throw new IOException("Could not rename temp to " + fileName3);
+                }
+            } else {
+                throw new IOException("Could not delete original input file " + fileName3);
+            }
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    public static String readHardWord(Context context){
+        File file = new File(context.getFilesDir(), fileName3);
+        String line="";
+        if(!file.exists()) {
+            Log.e("MainActivity","File does not exist");
+            return null;
+        }
+        try{
+            BufferedReader br = new BufferedReader(new FileReader(file));
+            line= br.readLine();
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+        return line;
     }
 
 

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="horizontal">
@@ -34,12 +35,10 @@
         android:layout_weight="1" />
 
     <Button
-        android:layout_width="20dp"
-        android:layout_height="20dp"
         android:id="@+id/delete"
-        android:text="X"
-        android:gravity="center_vertical|center_horizontal"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
         android:layout_marginTop="10dp"
-        android:background="@drawable/round_button"
-        android:textColor="#000" />
+        android:background="@drawable/deleteimg2"
+        android:gravity="center_vertical|center_horizontal" />
 </LinearLayout>

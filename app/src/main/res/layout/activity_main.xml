@@ -19,33 +19,95 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
+        android:background="#FFFFFF"
+        android:layout_above="@+id/buttonlayout">
+
+        <EditText
+            android:id="@+id/hardwork"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text"
+            android:hint="help"
+            android:layout_alignParentLeft="true"
+            android:visibility="gone"/>
+
+        <ImageButton
+            android:id="@+id/save"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_toLeftOf="@+id/edit"
+            android:background="@drawable/saveimg"
+            android:paddingLeft="40dp" />
+
+        <ImageButton
+            android:id="@+id/edit"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_alignParentRight="true"
+            android:background="@drawable/editimp"
+            android:paddingLeft="40dp" />
+
+    </RelativeLayout>>
+
+    <RelativeLayout
+        android:id="@+id/buttonlayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="#FFFFFF"
         android:layout_alignParentBottom="true">
 
-        <Button
+        <!-- <Button
             android:id="@+id/recordVoiceBtn"
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:layout_alignParentLeft="true"
-            android:paddingLeft="10dp"
+            android:paddingLeft="20dp"
             android:background="@drawable/round_button"
-            android:text="|>" />
+            android:gravity="center_vertical|center_horizontal"
+            android:drawableRight="@drawable/playimg" /> -->
 
-        <Button
+        <ImageButton
+            android:id="@+id/recordVoiceBtn"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_alignParentLeft="true"
+            android:background="@drawable/playimg"
+            android:paddingLeft="40dp" />
+
+       <!-- <Button
+            android:id="@+id/stopRecordVoiceBtn"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:background="@drawable/round_button"
+            android:layout_centerInParent="true"
+            android:gravity="center_vertical|center_horizontal"
+            android:src="@drawable/pauseimg" /> -->
+
+        <ImageButton
             android:id="@+id/stopRecordVoiceBtn"
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:layout_centerInParent="true"
-            android:background="@drawable/round_button"
-            android:text="o" />
+            android:background="@drawable/pauseimg" />
 
-        <Button
+        <!-- <Button
             android:id="@+id/button"
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:layout_alignParentRight="true"
+            android:drawableLeft="@drawable/addimg"
             android:background="@drawable/round_button"
-            android:text="+"
-            android:paddingRight="10dp"/>
+            android:gravity="center_vertical|center_horizontal"
+            android:paddingRight="20dp"/> -->
+
+        <ImageButton
+            android:id="@+id/button"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_alignParentRight="true"
+            android:background="@drawable/addimg"
+            android:paddingRight="40dp" />
 
     </RelativeLayout>
 </RelativeLayout>

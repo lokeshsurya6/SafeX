@@ -14,6 +14,7 @@ import android.provider.Telephony;
 import android.speech.SpeechRecognizer;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.telephony.SmsManager;
@@ -22,14 +23,23 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.androidplayground.rogue.helper.MainActivityHelper;
 import com.androidplayground.rogue.helper.SpeechRecognizerManager;
 
 import org.w3c.dom.Text;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,15 +47,17 @@ public class MainActivity extends AppCompatActivity {
 
     private TextView mTextMessage;
     //private TextView result_tv;
-    private Button addButton;
+    private ImageButton addButton;
     //private Button sendMessageButton;
     private ListView listView;
     public ListView getListView()
     {
         return listView;
     }
-    private Button recordVoiceBtn;
-    private Button stopRecordVoiceBtn;
+    private ImageButton recordVoiceBtn;
+    private ImageButton stopRecordVoiceBtn;
+    private  ImageButton editBtn;
+    private  ImageButton saveBtn;
     private SpeechRecognizerManager mSpeechManager;
     /*private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
             = new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -73,13 +85,31 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        addButton= (Button) findViewById(R.id.button);
+        addButton= (ImageButton ) findViewById(R.id.button);
         //sendMessageButton = (Button) findViewById(R.id.sendMessage);
         List<String> numbers = MainActivityHelper.readContactsList(getApplicationContext());
         List<String> names = MainActivityHelper.readContactsNameList(getApplicationContext());
         adapter=new MyListAdapter(this,getApplicationContext(), names, numbers);
         listView = (ListView) findViewById(R.id.contactsListView);
         listView.setAdapter(adapter);
+
+        File fileToWrite = new File(getApplicationContext().getFilesDir(), "hardWordFile");
+        if (!fileToWrite.exists()) {
+            Log.e("MainActivity", "File does not exist, creating one");
+            try {
+                fileToWrite.createNewFile();
+                FileOutputStream fos = new FileOutputStream(fileToWrite, false);
+                String str="help";
+                fos.write(str.getBytes());
+                fos.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        EditText et=(EditText)findViewById(R.id.hardwork);
+        et.setText(MainActivityHelper.readHardWord(getApplicationContext()));
+
         findViews();
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -103,6 +133,27 @@ public class MainActivity extends AppCompatActivity {
 
             }*/
         //});
+
+        editBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                EditText et=(EditText)findViewById(R.id.hardwork);
+                et.setVisibility(View.VISIBLE);
+            }
+        });
+
+        saveBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                EditText et=(EditText)findViewById(R.id.hardwork);
+                if(et.getText().toString()!=null){
+                    Log.e("SaveText",et.getText().toString());
+                    MainActivityHelper.updateHarWord(getApplicationContext(), et.getText().toString());
+                    String line=MainActivityHelper.readHardWord(getApplicationContext());
+                    Toast.makeText(getApplicationContext(), "Test is*****************" + line, Toast.LENGTH_LONG).show();
+                }
+            }
+        });
 
         recordVoiceBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -144,11 +195,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void findViews() {
-        addButton= (Button) findViewById(R.id.button);
-        recordVoiceBtn = (Button) findViewById(R.id.recordVoiceBtn);
+        addButton= (ImageButton ) findViewById(R.id.button);
+        recordVoiceBtn = (ImageButton) findViewById(R.id.recordVoiceBtn);
+        editBtn=(ImageButton) findViewById(R.id.edit);
+        saveBtn=(ImageButton) findViewById(R.id.save);
         //sendMessageButton = (Button) findViewById(R.id.sendMessage);
         listView = (ListView) findViewById(R.id.contactsListView);
-        stopRecordVoiceBtn = (Button) findViewById(R.id.stopRecordVoiceBtn);
+        stopRecordVoiceBtn = (ImageButton) findViewById(R.id.stopRecordVoiceBtn);
         //result_tv = (TextView) findViewById(R.id.textView);
     }
 
@@ -228,7 +281,7 @@ public class MainActivity extends AppCompatActivity {
                                 Log.e("MainActivity", "HOt Word Detected" + result);
                                 //MainActivityHelper.sendMessage(getApplicationContext());
                                 //MainActivityHelper.playAlarm(getApplicationContext());
-                                sendMessageButton.performClick();
+                                //sendMessageButton.performClick();
 
                                 //Start recording the Microphone input
                                 mSpeechManager.destroy();
