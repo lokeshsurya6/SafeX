@@ -12,16 +12,21 @@ import android.telephony.SmsManager;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.androidplayground.rogue.swamphacksandroid.MainActivity;
+import com.androidplayground.rogue.swamphacksandroid.MyListAdapter;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 import static android.support.v4.content.ContextCompat.getSystemService;
 
@@ -37,13 +42,26 @@ public class MainActivityHelper {
                 Log.e("MainActivity", "File does not exist, creating one");
                 fileToWrite.createNewFile();
             }
+            boolean flag=true;
+            Scanner scanner=new Scanner(fileToWrite);
+            while(scanner.hasNextLine()){
+                if(number.equals(scanner.nextLine().trim())){
+                    flag=false;
+                    break;
+                }
+            }
 
-            number = number+"\n";
-            FileOutputStream fos = new FileOutputStream(fileToWrite, true);
-            Log.e("MainActivity", "Writing to the file:" + fileToWrite.getName());
-            //mContcts.setText("Adding the text");
-            fos.write(number.getBytes());
-            fos.close();
+            if(flag){
+                number = number+"\n";
+                FileOutputStream fos = new FileOutputStream(fileToWrite, true);
+                Log.e("MainActivity", "Writing to the file:" + fileToWrite.getName());
+                //mContcts.setText("Adding the text");
+                fos.write(number.getBytes());
+                fos.close();
+            }
+            else{
+                Toast.makeText(context, "Contatc already exists", Toast.LENGTH_SHORT).show();
+            }
         }
         catch(Exception e)
         {
@@ -60,17 +78,109 @@ public class MainActivityHelper {
                 fileToWrite.createNewFile();
             }
 
-            name = name+"\n";
-            FileOutputStream fos = new FileOutputStream(fileToWrite, true);
-            Log.e("MainActivity", "Writing to the file:" + fileToWrite.getName());
-            //mContcts.setText("Adding the text");
-            fos.write(name.getBytes());
-            fos.close();
+            boolean flag=true;
+            Scanner scanner=new Scanner(fileToWrite);
+            while(scanner.hasNextLine()){
+                if(name.equals(scanner.nextLine().trim())){
+                    flag=false;
+                    break;
+                }
+            }
+
+            if(flag){
+                name = name+"\n";
+                FileOutputStream fos = new FileOutputStream(fileToWrite, true);
+                Log.e("MainActivity", "Writing to the file:" + fileToWrite.getName());
+                //mContcts.setText("Adding the text");
+                fos.write(name.getBytes());
+                fos.close();
+            }
+            else{
+                Toast.makeText(context, "Contatc already exists", Toast.LENGTH_SHORT).show();
+            }
         }
         catch(Exception e)
         {
             e.printStackTrace();
         }
+    }
+
+    public static void delNumberFunction(String num, Context context){
+        try{
+            File inputFile = new File(context.getFilesDir(), fileName);
+            if(!inputFile.exists()) {
+                Log.e("MainActivity","File does not exist");
+            }
+            File outputFile= new File(context.getFilesDir(), "temp");
+            if (!outputFile.exists()) {
+                Log.e("MainActivity", "File does not exist, creating one");
+                outputFile.createNewFile();
+            }
+            try (BufferedReader reader = new BufferedReader(new FileReader(inputFile));
+                 BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile))) {
+                // Read each line from the reader and compare it with
+                // with the line to remove and write if required
+                String line = null;
+                while ((line = reader.readLine()) != null) {
+                    if (!line.equals(num)) {
+                        writer.write(line);
+                        writer.newLine();
+                    }
+                }
+            }
+
+            if (inputFile.delete()) {
+                // Rename the output file to the input file
+                if (!outputFile.renameTo(inputFile)) {
+                    throw new IOException("Could not rename temp to " + fileName);
+                }
+            } else {
+                throw new IOException("Could not delete original input file " + fileName);
+            }
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+    }
+
+    public static void delNameFunction(String name, Context context){
+        try{
+            File inputFile = new File(context.getFilesDir(), fileName2);
+            if(!inputFile.exists()) {
+                Log.e("MainActivity","File does not exist");
+            }
+            File outputFile= new File(context.getFilesDir(), "temp");
+            if (!outputFile.exists()) {
+                Log.e("MainActivity", "File does not exist, creating one");
+                outputFile.createNewFile();
+            }
+            try (BufferedReader reader = new BufferedReader(new FileReader(inputFile));
+                 BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile))) {
+                // Read each line from the reader and compare it with
+                // with the line to remove and write if required
+                String line = null;
+                while ((line = reader.readLine()) != null) {
+                    if (!line.equals(name)) {
+                        writer.write(line);
+                        writer.newLine();
+                    }
+                }
+            }
+
+            if (inputFile.delete()) {
+                // Rename the output file to the input file
+                if (!outputFile.renameTo(inputFile)) {
+                    throw new IOException("Could not rename temp to " + fileName2);
+                }
+            } else {
+                throw new IOException("Could not delete original input file " + fileName2);
+            }
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
     }
 
 
@@ -176,6 +286,20 @@ public class MainActivityHelper {
         Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
         Ringtone ringtone = RingtoneManager.getRingtone(context, notification);
         ringtone.play();
+    }
+
+    public static void updateListView(ListView listView, MainActivity act, Context context) {
+        List<String> contactsList = MainActivityHelper.readContactsList(context);
+        List<String> contactsNameList = MainActivityHelper.readContactsNameList(context);
+        if(contactsList!=null && contactsNameList!=null && contactsNameList.size() > 0 && contactsList.size() > 0) {
+            //ArrayAdapter adapter = new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, contactsList);
+            MyListAdapter adapter=new MyListAdapter(act ,context, contactsNameList, contactsList);
+            listView.setAdapter(adapter);
+        }
+        else
+        {
+            Log.e("MainActivity","The contacts list is NULL");
+        }
     }
 
 

@@ -33,7 +33,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
         android:layout_marginTop="23dp"
-        android:layout_marginEnd="105dp"
+        android:layout_marginEnd="0dp"
         android:text="Add Contact"
         tools:layout_editor_absoluteX="180dp"
         tools:layout_editor_absoluteY="25dp" />
