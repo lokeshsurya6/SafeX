@@ -164,8 +164,9 @@ public class MainActivityHelper {
             SmsManager smsManager = SmsManager.getDefault();
             StringBuffer smsBody = new StringBuffer();
             smsBody.append(message);
-    //        if (l != null) {
-    //            double lat = l.getLatitude();
+    //        if (l != null) { git remote set-url origin https://github.com/Prudhvee/SwampHacks.git
+
+            //            double lat = l.getLatitude();
     //            double lon = l.getLongitude();
                 String loc = "http://maps.google.com/maps?saddr=" + latitude + "," + longitude;
                 smsBody.append(Uri.parse(loc));
