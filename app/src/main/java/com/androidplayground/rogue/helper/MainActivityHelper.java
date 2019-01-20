@@ -3,11 +3,17 @@ package com.androidplayground.rogue.helper;
 import android.content.Context;
 import android.location.Location;
 import android.location.LocationManager;
+import android.media.AudioFormat;
 import android.media.AudioManager;
+import android.media.AudioRecord;
 import android.media.MediaPlayer;
+import android.media.MediaRecorder;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.os.Environment;
+import android.os.Handler;
+import android.provider.MediaStore;
 import android.telephony.SmsManager;
 import android.util.Log;
 import android.widget.ArrayAdapter;
@@ -285,6 +291,12 @@ public class MainActivityHelper {
     {
         Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
         Ringtone ringtone = RingtoneManager.getRingtone(context, notification);
+        if(ringtone.isPlaying())
+        {
+            ringtone.stop();
+            return;
+        }
+
         ringtone.play();
     }
 
@@ -303,4 +315,33 @@ public class MainActivityHelper {
     }
 
 
+    public static void record(final Context applicationContext) {
+        final MediaRecorder myAudioRecorder = new MediaRecorder();
+        String output = Environment.getExternalStorageDirectory().getAbsolutePath()+ "/myrecording.3gp";
+        Toast.makeText(applicationContext, "The dir is" + output, Toast.LENGTH_LONG).show();
+        Log.e("MainActivityHelper","The external directory is " + output);
+        myAudioRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+        myAudioRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+        myAudioRecorder.setAudioEncoder(MediaRecorder.OutputFormat.AMR_NB);
+        myAudioRecorder.setOutputFile(output);
+
+        try {
+            Toast.makeText(applicationContext, "Starting to record"+output, Toast.LENGTH_LONG).show();
+            myAudioRecorder.prepare();
+            myAudioRecorder.start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        final Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(applicationContext, "Stopping the record", Toast.LENGTH_LONG).show();
+                myAudioRecorder.stop();
+                myAudioRecorder.release();
+
+            }
+        }, 6000);
+    }
 }

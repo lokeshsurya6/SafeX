@@ -219,10 +219,26 @@ public class MainActivity extends AppCompatActivity {
                     }
                     else {
                         StringBuilder sb = new StringBuilder();
-                        if (results.size() > 5) {
+                        if (results.size() > 5) { 
                             results = (ArrayList<String>) results.subList(0, 5);
                         }
                         for (String result : results) {
+                            if(result.equalsIgnoreCase(getString(R.string.HotWord)))
+                            {
+                                Log.e("MainActivity", "HOt Word Detected" + result);
+                                //MainActivityHelper.sendMessage(getApplicationContext());
+                                //MainActivityHelper.playAlarm(getApplicationContext());
+                                sendMessageButton.performClick();
+
+                                //Start recording the Microphone input
+                                mSpeechManager.destroy();
+                                if(ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
+                                {
+                                    ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 200);
+                                }
+                                MainActivityHelper.record(getApplicationContext());
+
+                            }
                             sb.append(result).append("\n");
                             Log.e("String BUffer",sb.toString());
                         }
