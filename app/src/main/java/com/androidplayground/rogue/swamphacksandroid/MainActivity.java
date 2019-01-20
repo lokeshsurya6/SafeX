@@ -36,9 +36,9 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
 
     private TextView mTextMessage;
-    private TextView result_tv;
+    //private TextView result_tv;
     private Button addButton;
-    private Button sendMessageButton;
+    //private Button sendMessageButton;
     private ListView listView;
     public ListView getListView()
     {
@@ -47,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
     private Button recordVoiceBtn;
     private Button stopRecordVoiceBtn;
     private SpeechRecognizerManager mSpeechManager;
-    private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
+    /*private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
             = new BottomNavigationView.OnNavigationItemSelectedListener() {
 
         @Override
@@ -65,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
             }
             return false;
         }
-    };
+    };*/
     static final private int PICK_CONTACT = 1;
     MyListAdapter adapter;
 
@@ -74,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         addButton= (Button) findViewById(R.id.button);
-        sendMessageButton = (Button) findViewById(R.id.sendMessage);
+        //sendMessageButton = (Button) findViewById(R.id.sendMessage);
         List<String> numbers = MainActivityHelper.readContactsList(getApplicationContext());
         List<String> names = MainActivityHelper.readContactsNameList(getApplicationContext());
         adapter=new MyListAdapter(this,getApplicationContext(), names, numbers);
@@ -90,7 +90,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        sendMessageButton.setOnClickListener(new View.OnClickListener() {
+        /*sendMessageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if(ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
@@ -101,8 +101,8 @@ public class MainActivity extends AppCompatActivity {
                 MainActivityHelper.sendMessage(getApplicationContext());
                 MainActivityHelper.playAlarm(getApplicationContext());
 
-            }
-        });
+            }*/
+        //});
 
         recordVoiceBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -130,15 +130,15 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if(mSpeechManager!=null) {
-                    result_tv.setText("Destroyed");
+                    //result_tv.setText("Destroyed");
                     mSpeechManager.destroy();
                     mSpeechManager = null;
                 }
             }
         });
 
-        BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
-        navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
+        //BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
+        //navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
         //updateListView(listView);
         MainActivityHelper.updateListView(listView, this, getApplicationContext());
     }
@@ -146,10 +146,10 @@ public class MainActivity extends AppCompatActivity {
     private void findViews() {
         addButton= (Button) findViewById(R.id.button);
         recordVoiceBtn = (Button) findViewById(R.id.recordVoiceBtn);
-        sendMessageButton = (Button) findViewById(R.id.sendMessage);
+        //sendMessageButton = (Button) findViewById(R.id.sendMessage);
         listView = (ListView) findViewById(R.id.contactsListView);
         stopRecordVoiceBtn = (Button) findViewById(R.id.stopRecordVoiceBtn);
-        result_tv = (TextView) findViewById(R.id.textView);
+        //result_tv = (TextView) findViewById(R.id.textView);
     }
 
 
@@ -215,7 +215,7 @@ public class MainActivity extends AppCompatActivity {
                     {
                         mSpeechManager.destroy();
                         mSpeechManager = null;
-                        result_tv.setText(results.get(0));
+                        //result_tv.setText(results.get(0));
                     }
                     else {
                         StringBuilder sb = new StringBuilder();
@@ -226,12 +226,12 @@ public class MainActivity extends AppCompatActivity {
                             sb.append(result).append("\n");
                             Log.e("String BUffer",sb.toString());
                         }
-                        result_tv.setText(sb.toString());
+                        //result_tv.setText(sb.toString());
                     }
                 }
                 else
                     ;
-                    result_tv.setText("No results found");
+                    //result_tv.setText("No results found");
             }
         });
     }
