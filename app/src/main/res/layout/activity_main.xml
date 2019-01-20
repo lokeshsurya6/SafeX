@@ -21,6 +21,13 @@
         android:layout_gravity="bottom"
         android:background="#FFFFFF"
         android:layout_above="@+id/buttonlayout">
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="23dp"
+
+        android:layout_marginEnd="0dp"
+        android:text="Add Contact"
+        tools:layout_editor_absoluteX="180dp"
+        tools:layout_editor_absoluteY="25dp" />
 
         <EditText
             android:id="@+id/hardwork"

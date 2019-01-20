@@ -3,6 +3,11 @@ package com.androidplayground.rogue.helper;
 import android.content.Context;
 import android.location.Location;
 import android.location.LocationManager;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioRecord;
@@ -18,6 +23,19 @@ import android.telephony.SmsManager;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+
+import com.androidplayground.rogue.swamphacksandroid.MainActivity;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnSuccessListener;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import android.widget.Toast;
 
 import com.androidplayground.rogue.swamphacksandroid.MainActivity;
@@ -37,6 +55,7 @@ import java.util.Scanner;
 import static android.support.v4.content.ContextCompat.getSystemService;
 
 public class MainActivityHelper {
+    private static final int MY_PERMISSION_ACCESS_FINE_LOCATION = 11;
 
     public static String fileName = "contactsList";
     public static String fileName2 = "contactsNameList";
@@ -49,6 +68,7 @@ public class MainActivityHelper {
                 Log.e("MainActivity", "File does not exist, creating one");
                 fileToWrite.createNewFile();
             }
+
             boolean flag=true;
             Scanner scanner=new Scanner(fileToWrite);
             while(scanner.hasNextLine()){
@@ -84,6 +104,7 @@ public class MainActivityHelper {
                 Log.e("MainActivity", "File does not exist, creating one");
                 fileToWrite.createNewFile();
             }
+
 
             boolean flag=true;
             Scanner scanner=new Scanner(fileToWrite);
@@ -310,25 +331,29 @@ public class MainActivityHelper {
 //    }
 
 
-    public static void sendMessage(Context context)
+    public static void sendMessage(Context context,double latitude,double longitude)
     {
+
+
         List<String> numbers = MainActivityHelper.readContactsList(context);
         GPSTracker gpsTracker = new GPSTracker(context);
         for(String num: numbers) {
             Log.e("MainActivity", "Message is Heloooooo");
             Location l = gpsTracker.getLocation();
             //Log.e("MainActivity", ("The location is:" + l));
-            String message = "HELP ME!!!!";
+            String message = "HELP ME!!!!\n";
             SmsManager smsManager = SmsManager.getDefault();
             StringBuffer smsBody = new StringBuffer();
             smsBody.append(message);
-            if (l != null) {
-                double lat = l.getLatitude();
-                double lon = l.getLongitude();
-                String loc = "http://maps.google.com/maps?saddr=" + lat + "," + lon;
+    //        if (l != null) { git remote set-url origin https://github.com/Prudhvee/SwampHacks.git
+
+            //            double lat = l.getLatitude();
+    //            double lon = l.getLongitude();
+                String loc = "http://maps.google.com/maps?saddr=" + latitude + "," + longitude;
                 smsBody.append(Uri.parse(loc));
-                //Log.e("MainActivity", "Message is " + smsBody);
-            }
+                Log.e("MainActivity", "Message is " + smsBody);
+     //       }
+
 
             android.telephony.SmsManager.getDefault().sendTextMessage(num, null, smsBody.toString(), null, null);
         }
@@ -338,6 +363,7 @@ public class MainActivityHelper {
     {
         Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
         Ringtone ringtone = RingtoneManager.getRingtone(context, notification);
+
         if(ringtone.isPlaying())
         {
             ringtone.stop();

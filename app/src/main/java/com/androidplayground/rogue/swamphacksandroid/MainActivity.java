@@ -1,7 +1,9 @@
 package com.androidplayground.rogue.swamphacksandroid;
 
 import android.Manifest;
+
 import android.content.Context;
+
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -32,6 +34,11 @@ import android.widget.Toast;
 import com.androidplayground.rogue.helper.MainActivityHelper;
 import com.androidplayground.rogue.helper.SpeechRecognizerManager;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnSuccessListener;
+
+
 import org.w3c.dom.Text;
 
 import java.io.BufferedReader;
@@ -49,6 +56,12 @@ public class MainActivity extends AppCompatActivity {
     //private TextView result_tv;
     private ImageButton addButton;
     //private Button sendMessageButton;
+    private TextView result_tv;
+    private Button sendMessageButton;
+    private FusedLocationProviderClient mFusedLocationClient;
+    private static final int MY_PERMISSION_ACCESS_FINE_LOCATION = 11;
+
+    private static final int PERMISSION_SEND_SMS = 1;
     private ListView listView;
     public ListView getListView()
     {
@@ -87,6 +100,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         addButton= (ImageButton ) findViewById(R.id.button);
         //sendMessageButton = (Button) findViewById(R.id.sendMessage);
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        //sendMessageButton = (Button) findViewById(R.id.sendMessage);
         List<String> numbers = MainActivityHelper.readContactsList(getApplicationContext());
         List<String> names = MainActivityHelper.readContactsNameList(getApplicationContext());
         adapter=new MyListAdapter(this,getApplicationContext(), names, numbers);
@@ -123,16 +138,10 @@ public class MainActivity extends AppCompatActivity {
         /*sendMessageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-                        ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED)
-                {
-                    ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.SEND_SMS}, 200);
-                }
-                MainActivityHelper.sendMessage(getApplicationContext());
-                MainActivityHelper.playAlarm(getApplicationContext());
 
-            }*/
-        //});
+
+            }
+        });*/
 
         editBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -187,9 +196,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-
-        //BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
-        //navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
         //updateListView(listView);
         MainActivityHelper.updateListView(listView, this, getApplicationContext());
     }
@@ -204,6 +210,22 @@ public class MainActivity extends AppCompatActivity {
         stopRecordVoiceBtn = (ImageButton) findViewById(R.id.stopRecordVoiceBtn);
         //result_tv = (TextView) findViewById(R.id.textView);
     }
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults)
+    {
+        switch(requestCode)
+        {
+            case PERMISSION_SEND_SMS:
+                if(grantResults != null && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+                {
+//                    ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.SEND_SMS}, PERMISSION_SEND_SMS);
+                    ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.SEND_SMS}, PERMISSION_SEND_SMS);
+                }
+                break;
+        }
+    }
+
+
 
 
     @Override
@@ -242,6 +264,7 @@ public class MainActivity extends AppCompatActivity {
                 //mTextMessage.setText(number);
                 MainActivityHelper.writeNumberToStorage(number, getApplicationContext());
                 MainActivityHelper.writeNameToStorage(name, getApplicationContext());
+
                 //updateListView(listView);
                 MainActivityHelper.updateListView(listView, this, getApplicationContext());
             }
@@ -272,6 +295,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                     else {
                         StringBuilder sb = new StringBuilder();
+
                         if (results.size() > 5) { 
                             results = (ArrayList<String>) results.subList(0, 5);
                         }
@@ -280,7 +304,30 @@ public class MainActivity extends AppCompatActivity {
                             {
                                 Log.e("MainActivity", "HOt Word Detected" + result);
                                 //MainActivityHelper.sendMessage(getApplicationContext());
-                                //MainActivityHelper.playAlarm(getApplicationContext());
+                               // MainActivityHelper.playAlarm(getApplicationContext());
+
+                                if(ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                                        ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED)
+                                {
+                                    //         ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.SEND_SMS}, PERMISSION_SEND_SMS);
+                                    ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.SEND_SMS},11);
+                                }
+                                mFusedLocationClient.getLastLocation()
+                                        .addOnSuccessListener(MainActivity.this, new OnSuccessListener<Location>() {
+                                            @Override
+                                            public void onSuccess(Location location) {
+                                                Log.e("MainActivity", "abcd ");
+
+                                                // Got last known location. In some rare situations this can be null.
+                                                double latitude = location.getLatitude();
+                                                double longitude = location.getLongitude();
+                                                MainActivityHelper.sendMessage(getApplicationContext(),latitude, longitude);
+
+
+                                            }
+                                        });
+
+                                MainActivityHelper.playAlarm(getApplicationContext());
                                 //sendMessageButton.performClick();
 
                                 //Start recording the Microphone input
